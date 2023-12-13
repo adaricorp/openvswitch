@@ -1,0 +1,47 @@
+---
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build debian package
+    runs-on: ubuntu-latest
+    environment:
+      name: "release"
+    strategy:
+      matrix:
+        target: ["ubuntu:22.04"]
+    container:
+      image: "${{ matrix.target }}"
+    steps:
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get -y install git
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Build debian packages
+        run: ./build.sh
+
+      - name: Stash debian packages
+        run: |
+          distro_dir=$(echo ${{ matrix.target }} | tr ':' '_')
+          packages_dir="${GITHUB_WORKSPACE}/packages/${distro_dir}"
+          mkdir -p "${packages_dir}"
+          mv -v "${GITHUB_WORKSPACE}"/*.deb "${packages_dir}"
+
+      - name: Publish debian packages to cloudsmith
+        uses: wandnz/action-cloudsmith-upload-packages@v1
+        with:
+          path: packages/
+          repo: adaricorp/openvswitch
+          username: brad-cowie
+          api_key: ${{ secrets.CLOUDSMITH_API_KEY }}

@@ -1,0 +1,38 @@
+---
+name: Update git submodules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 11 * * *"
+
+jobs:
+  update-submodules:
+    name: Update git submodules
+    runs-on: ubuntu-latest
+    environment:
+      name: "pr"
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ssh-key: "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}"
+          submodules: true
+          fetch-depth: 0
+
+      - name: Update git submodules to latest tag
+        shell: bash
+        run: |
+          git submodule foreach \
+          'git checkout "tags/$(git describe $(git rev-list --tags --max-count=1))"'
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: update-submodules
+          commit-message: "build(deps): Bump git submodules"
+          title: "build(deps): Bump git submodules"
+          body: "Bump git submodules to latest tag"
