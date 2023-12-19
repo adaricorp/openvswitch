@@ -43,5 +43,5 @@ jobs:
         with:
           path: packages/
           repo: adaricorp/openvswitch
-          username: brad-cowie
+          username: github-actions-openvswitch
           api_key: ${{ secrets.CLOUDSMITH_API_KEY }}
