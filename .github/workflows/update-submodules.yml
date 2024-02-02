@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           git submodule foreach \
-          'git checkout "tags/$(git describe $(git rev-list --tags --max-count=1))"'
+          'git fetch; git checkout "tags/$(git tag --sort=-committerdate --list | grep -v pre | head -n 1)"'
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
