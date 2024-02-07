@@ -24,10 +24,23 @@ jobs:
           fetch-depth: 0
 
       - name: Update git submodules to latest tag
+        id: bump-submodules
         shell: bash
         run: |
-          git submodule foreach \
-          'git fetch; git checkout "tags/$(git tag --sort=-committerdate --list | grep -v pre | head -n 1)"'
+          {
+            echo 'GIT_OUTPUT<<EOF'
+            git submodule foreach '
+              git fetch
+
+              current_tag=$(git describe --tag)
+              latest_tag=$(git tag --sort=-creatordate --list | grep -v pre | head -n 1)
+
+              git checkout "tags/${latest_tag}"
+
+              test "${current_tag}" != "${latest_tag}" &&
+                echo "Bumping version from ${current_tag} to ${latest_tag}\n" || echo "\n"'
+            echo EOF
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
@@ -35,4 +48,7 @@ jobs:
           branch: update-submodules
           commit-message: "build(deps): Bump git submodules"
           title: "build(deps): Bump git submodules"
-          body: "Bump git submodules to latest tag"
+          body: |
+            Bump git submodules to latest tag
+
+            ${{ steps.bump-submodules.outputs.GIT_OUTPUT }}
