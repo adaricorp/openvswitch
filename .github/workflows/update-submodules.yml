@@ -33,7 +33,7 @@ jobs:
               git fetch
 
               current_tag=$(git describe --tag)
-              latest_tag=$(git tag --sort=-creatordate --list | grep -v pre | head -n 1)
+              latest_tag=$(git tag --list --sort=-version:refname | grep -v pre | head -n 1)
 
               git checkout "tags/${latest_tag}"
 
