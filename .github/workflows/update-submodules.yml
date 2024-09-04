@@ -43,7 +43,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           branch: update-submodules
           commit-message: "build(deps): Bump git submodules"
