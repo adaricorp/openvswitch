@@ -19,7 +19,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ssh-key: "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}"
           submodules: true
           fetch-depth: 0
 
@@ -42,9 +41,17 @@ jobs:
             echo EOF
           } >> "${GITHUB_OUTPUT}"
 
+      - name: Generate GitHub app token
+        id: github-app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ steps.github-app-token.outputs.token }}
           branch: update-submodules
           sign-commits: true
           commit-message: "build(deps): Bump git submodules"
